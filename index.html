@@ -1,0 +1,182 @@
+<!--
+Author: Bisvarup Mukherjee
+email Id: pritammukherjee16@gmail.com
+This code is free to use and refer, though a acknowledgement of my work would be greatly accepted.
+-->
+<!DOCTYPE html>
+<html>
+   <head>
+      <style>
+         body
+         {
+         padding: 1%;
+         }
+         #result
+         {
+         width: 90%;
+         text-align: left;
+         position: relative;
+            left: 50%;
+             transform: translate(-50%);
+         }
+         h1,h2,h3,h4,h5,h6
+         {
+         text-align: center;
+         }
+          td{
+              padding: 0.5%;
+              margin: 0.5%;
+          }
+          
+      </style>
+      <!-- JQuery -->
+      <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.1/jquery.min.js"></script>
+      
+   </head>
+   <body>
+      <header>
+         <h1>
+            WikiApi example demo
+         </h1>
+      </header>
+      <SECTION>
+         <div>
+             <table>
+                 <tr>
+                     <td>
+                         Search Term :
+                     </td>
+                     <td>
+                         <input type="text" id="term" class="" value="cats">
+                     </td>
+                 </tr>
+                 <tr>
+                     <td>
+                         No of lines to show:
+                     </td>
+                     <td>
+                         <input type="text" id="lines" class="" value="10">
+                     </td>
+                 </tr>
+                 <tr>
+                     <td>
+                         Number of items to show: 
+                     </td>
+                     <td>
+                         <input type="text" id="items" class="" value="10">
+                     </td>
+                 </tr>
+                 <tr>
+                     <td colspan="2">
+                         <button id="startSearch" class="btn-success">Search Wiki</button>
+                     </td>
+                 </tr>
+             </table>
+            
+         </div>
+      </SECTION>
+      <div id="result"></div>
+      <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+   </body>
+</html>
+<script>
+         // http://www.zacwitte.com/getting-wikipedia-summary-from-the-page-id
+             var html="";
+               var lang="en";
+               var format="json";
+               var action="query";
+               var sentences="10";
+               var noOfResponses="10";
+               var search="cats";
+                //These are important search parameters
+               var pageId,extract,index,imgSrc,imgHeight,imgWidth,title;
+    
+    
+           function searchWiki() {
+             var url="https://"+lang+".wikipedia.org/w/api.php?format="+format+"&action="+action+"&generator=search&gsrnamespace=0&gsrlimit="+noOfResponses+"&prop=pageimages|extracts&pilimit=max&exintro&explaintext&exsentences="+sentences+"&exlimit=max&gsrsearch="+search+"&callback=JSON_CALLBACK";
+               //This is the wiki api url
+               //output would be in json format
+             $.ajax({
+             url: url,
+             dataType: 'jsonp',
+             success: function(data) {
+                 $("#result").html("");
+                 console.log(data);
+                 //check console  for the exact fotmat of this json object that //wiki gives us
+                 var results = data.query.pages;
+                 
+                 for(var key in results) {
+                     var value = results[key] ;
+                     title=value["title"];
+                     pageId=value["pageid"]; 
+                     extract=value["extract"]; 
+                     index=value["index"];
+                     
+                     display_data("<div><h3>"+title+"</h3></div>");
+                     if(value["thumbnail"]!=null)
+                         {
+                             
+                            try {
+                            imgSrc=value["thumbnail"]["source"]; 
+                            imgHeight=value["thumbnail"]["height"]; 
+                            imgWidth=value["thumbnail"]["width"]; 
+                            addImg(imgSrc,imgHeight,imgWidth);
+                        }
+                             
+                            catch(err) {    
+                                document.getElementById("result").innerHTML = err.message;
+                        }
+                     
+                    }//end of checking if thumbnail is available
+                     
+                     
+                     display_data(extract);
+                     display_data("<a target='_blank' href='http://en.wikipedia.org/?curid="+pageId+"'>Read More . . </a>");
+                     
+                     resetParameters();
+                  }
+                  
+                 //obj.query.pages[0]
+               }
+             });
+         }
+           
+           function resetParameters()
+           {
+               pageId="";
+               extract="";
+                index="";
+                imgHeight="";
+                imgSrc="";
+                imgWidth="";
+           }
+           
+           function display_data(data)
+           {
+                 $("#result").append("<p>"+data+"</p>");         
+           }
+           
+           function addImg(source,height,width)
+           {
+               $("#result").append("<p><img src='"+source+"' height='"+height+"' width='"+width+"'</p>");         
+           }
+      </script>
+<script type="text/javascript">
+   $(document).ready(function()
+     {
+       startIsClicked();
+     });
+     function startIsClicked()
+     {
+       
+       $("#startSearch").click(
+       function()
+       {
+           $("#result").html("<br><br><br><h3>Getting results .. </h3>");
+           search=$("#term").val();
+           noOfResponses=$("#items").val();
+           sentences=$("lines").val();
+           searchWiki();
+       });  
+     }
+</script>
